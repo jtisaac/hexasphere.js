@@ -151,7 +151,7 @@ $(window).load(function(){
 
         if (elevation > elevation_threshold * greatest_elevation) {
             type = "ORE";
-        } else if ((r < 50 && g < 30 && b > 80) || (r >= 220 && r <= 235 && g >= 235 && g < 245 && b > 235)) {
+        } else if ((r < 50 && g < 30 && b > 80) || (r >= 220 && r <= 240 && g >= 230 && g < 250 && b > 235)) {
             type = "WATER";
         } else if (diff < 40) {
             type = "DESERT"
