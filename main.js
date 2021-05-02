@@ -41,11 +41,20 @@ $(window).load(function(){
     elevationProjectionCanvas.width = elevation_img.width;
     elevationProjectionCanvas.height = elevation_img.height;
     elevationProjectionContext.drawImage(elevation_img, 0, 0, elevation_img.width, elevation_img.height);
+
+    var river_img = document.getElementById("rivers_blue");
+    var riverProjectionCanvas = document.createElement('canvas');
+    var riverProjectionContext = riverProjectionCanvas.getContext('2d');
+
+    riverProjectionCanvas.width = river_img.width;
+    riverProjectionCanvas.height = river_img.height;
+    riverProjectionContext.drawImage(river_img, 0, 0, river_img.width, river_img.height);
     
 
     var pixelData = null;
     var landuseData = null;
     var elevationData = null;
+    var riverData = null;
 
     var greatest_elevation = -1;
     greatest_elevation = 217;
@@ -137,9 +146,38 @@ $(window).load(function(){
 
     }
 
+    var getRiver = function(lat, lon) {
+        var x = parseInt(river_img.width * (lon + 180 - 10) / 360);
+
+        var y = parseInt(river_img.height * ((lat + 90) / 160));
+
+        if(riverData == null){
+            riverData = riverProjectionContext.getImageData(0,0,river_img.width, river_img.height);
+        }
+        //console.log(landuseData);
+        var r = riverData.data[(y * riverData.width + x) * 4];
+        var g = riverData.data[(y * riverData.width + x) * 4 + 1];
+        var b = riverData.data[(y * riverData.width + x) * 4 + 2];
+        //var a = elevationData.data[(y * elevationData.width + x) * 4 + 3];
+
+        /*if (r > greatest_elevation) {
+            greatest_elevation = r;
+        }
+        if (r < smallest_elevation) {
+            smallest_elevation = r;
+        }*/
+        console.log(r);
+        console.log(g);
+        console.log(b);
+        console.log("Next");
+        return r != undefined && r != 255 || g != 255;
+
+    }
+
     var getTerrainType = function(lat, lon, elevation_threshold) {
         var elevation = getElevation(lat, lon);
         var land_cover = getLandCover(lat, lon);
+        var river = getRiver(lat, lon);
         var r = land_cover[0];
         var g = land_cover[1];
         var b = land_cover[2];
@@ -163,6 +201,10 @@ $(window).load(function(){
             type = "SHEEP";
         } else if (r > g - 50 && r > b - 50) {
             type = "BRICK";
+        }
+        if (river) {
+            console.log("river");
+            type = "UNKNOWN";
         }
         // Identify Black Sea to change from desert to sea
         /*if (lat+90 > 40 && lon > 27 && lat+90 < 47 && lon < 42) {
