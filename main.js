@@ -10,6 +10,9 @@ $(window).load(function(){
     var camera = new THREE.PerspectiveCamera( cameraDistance, width / height, 1, 200);
     camera.position.z = -cameraDistance;
 
+    //var controls = new THREE.OrbitControls( camera, renderer.domElement );
+    // var controls = new THREE.OrbitControls(camera, renderer.domElement);
+
     var scene = new THREE.Scene();
     scene.fog = new THREE.Fog( 0x000000, cameraDistance*.4, cameraDistance * 1.2);
 
@@ -20,9 +23,18 @@ $(window).load(function(){
     projectionCanvas.width = img.width;
     projectionCanvas.height = img.height;
     projectionContext.drawImage(img, 0, 0, img.width, img.height);
+
+    var landuse_img = document.getElementById("landuse");
+    var landuseProjectionCanvas = document.createElement('canvas');
+    var landuseProjectionContext = landuseProjectionCanvas.getContext('2d');
+
+    landuseProjectionCanvas.width = landuse_img.width;
+    landuseProjectionCanvas.height = landuse_img.height;
+    landuseProjectionContext.drawImage(landuse_img, 0, 0, landuse_img.width, landuse_img.height);
     
 
     var pixelData = null;
+    var landuseData = null;
 
     var maxLat = -100;
     var maxLon = 0;
@@ -37,8 +49,40 @@ $(window).load(function(){
         if(pixelData == null){
             pixelData = projectionContext.getImageData(0,0,img.width, img.height);
         }
+        console.log(pixelData);
         return pixelData.data[(y * pixelData.width + x) * 4] === 0;
     };
+
+    var getLandCover = function(lat, lon){
+        var x = parseInt(landuse_img.width * (lon + 180) / 360);
+        var y = parseInt(landuse_img.height * (lat + 90) / 180);
+
+        if(landuseData == null){
+            landuseData = landuseProjectionContext.getImageData(0,0,landuse_img.width, landuse_img.height);
+        }
+        //console.log(landuseData);
+        var r = landuseData.data[(y * landuseData.width + x) * 4];
+        var g = landuseData.data[(y * landuseData.width + x) * 4 + 1];
+        var b = landuseData.data[(y * landuseData.width + x) * 4 + 2];
+        var a = landuseData.data[(y * landuseData.width + x) * 4 + 3];
+        //console.log(r);
+        //console.log(g);
+        //console.log(b);
+        //console.log(a);
+        function componentToHex(c) {
+          var hex = c.toString(16);
+          return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        function rgbToHex(r, g, b) {
+          return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+        }
+        var mat = new THREE.MeshBasicMaterial({color: rgbToHex(r,g,b), transparent: true});
+        //mat.color.setRGB(r, g, b);
+        //mesh.geometry.colorsNeedUpdate = true;
+        return mat;
+
+    }
 
 
     var meshMaterials = [];
@@ -72,6 +116,7 @@ $(window).load(function(){
 
             var geometry = new THREE.Geometry();
 
+
             for(var j = 0; j< t.boundary.length; j++){
                 var bp = t.boundary[j];
                 geometry.vertices.push(new THREE.Vector3(bp.x, bp.y, bp.z));
@@ -83,14 +128,16 @@ $(window).load(function(){
                 geometry.faces.push(new THREE.Face3(0,4,5));
             }
 
-            if(isLand(latLon.lat, latLon.lon)){
+            /*if(isLand(latLon.lat, latLon.lon)){
                 material = meshMaterials[Math.floor(Math.random() * meshMaterials.length)]
             } else {
                 material = oceanMaterial[Math.floor(Math.random() * oceanMaterial.length)]
-            }
+            }*/
+            material = getLandCover(latLon.lat, latLon.lon);
 
             material.opacity = 0.3;
             var mesh = new THREE.Mesh(geometry, material.clone());
+            //mesh.geometry.colorsNeedUpdate = true;
             scene.add(mesh);
             hexasphere.tiles[i].mesh = mesh;
 
@@ -143,7 +190,7 @@ $(window).load(function(){
         });
 
         currentTiles = nextTiles;
-
+        //controls.update();
         requestAnimationFrame(tick);
 
     }

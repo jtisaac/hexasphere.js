@@ -6,17 +6,25 @@
 
         <meta name="Description" content="Javascript library to generate a sphere covered in hexagons." />
         <meta name="Keywords" content="hexasphere, hexasphere.js, geodesic sphere, geodesic polyhedron, javascript, hexagons" />
-        <script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://code.jquery.com/jquery-migrate-1.4.1.min.js"></script>
+
 
         <!-- these are just for the demo page / options -->
 
         <link href="styles.css" rel="stylesheet" type="text/css" />
 
         <!-- required for the application -->
+        <!-- <script src="https://threejs.org/build/three.js"></script> -->
+        <!-- <script type="module" src="https://threejs.org/examples/js/controls/OrbitControls.js"></script> -->
         <script src="include/three.min.js"></script>
+        <!-- <script type="module" src="https://threejs.org/examples/jsm/deprecated/Geometry.js"></script> -->
+        <!-- <script type="module" src="include/Geometry.js"></script> -->
+        
         <script src="include/FileSaver.min.js"></script>
         <script src="build/hexasphere.js"></script>
         <script src="main.js"></script>
+
 
     </head>
     <body>
@@ -64,6 +72,7 @@
         <div id="container">
         </div>
         <img id="projection" src="equirectangle_projection.png" />
+        <img id="landuse" src="landuse.jpg" />
         <!-- ref:include analytics -->
         <!-- endref -->
 

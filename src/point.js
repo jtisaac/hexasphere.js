@@ -6,6 +6,8 @@ var Point = function(x,y,z){
     }
 
     this.faces = [];
+    this.neighbors = [];
+    this.owner = undefined;
 }
 
 Point.prototype.subdivide = function(point, count, checkPoint){
