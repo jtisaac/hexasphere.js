@@ -16,6 +16,8 @@ $(window).load(function(){
     var scene = new THREE.Scene();
     scene.fog = new THREE.Fog( 0x000000, cameraDistance*.4, cameraDistance * 1.2);
 
+    var targetList = [];
+
     var img = document.getElementById("projection");
     var projectionCanvas = document.createElement('canvas');
     var projectionContext = projectionCanvas.getContext('2d');
@@ -149,7 +151,7 @@ $(window).load(function(){
 
         if (elevation > elevation_threshold * greatest_elevation) {
             type = "ORE";
-        } else if (r < 50 && g < 30 && b > 80) {
+        } else if ((r < 50 && g < 30 && b > 80) || (r >= 220 && r <= 235 && g >= 235 && g < 245 && b > 235)) {
             type = "WATER";
         } else if (diff < 40) {
             type = "DESERT"
@@ -162,9 +164,11 @@ $(window).load(function(){
         } else if (r > g - 50 && r > b - 50) {
             type = "BRICK";
         }
-        if (type.localeCompare("UNKNOWN") == 0) {
+        // Identify Black Sea to change from desert to sea
+        /*if (lat+90 > 40 && lon > 27 && lat+90 < 47 && lon < 42) {
+            console.log(type);
             console.log(r.toString() + " " + g.toString() + " " + b.toString());
-        }
+        }*/
         return type;
     }
 
@@ -246,11 +250,12 @@ $(window).load(function(){
             var mesh = new THREE.Mesh(geometry, material.clone());
             //mesh.geometry.colorsNeedUpdate = true;
             scene.add(mesh);
+            //targetList.push(mesh);
             hexasphere.tiles[i].mesh = mesh;
 
         }
-        console.log(greatest_elevation);
-        console.log(smallest_elevation);
+        //console.log(greatest_elevation);
+        //console.log(smallest_elevation);
 
         seenTiles = {};
         
@@ -259,7 +264,7 @@ $(window).load(function(){
             seenTiles[item.toString()] = 1;
             item.mesh.material.opacity = 1;
         });
-
+        targetList.push(hexasphere);
         window.hexasphere = hexasphere;
         introTick = 0;
     };
@@ -373,6 +378,18 @@ $(window).load(function(){
         var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
         projector.unprojectVector( vector, camera );
         var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+        // create an array containing all objects in the scene with which the ray intersects
+        var intersects = ray.intersectObjects( targetList );
+        
+        // if there is one (or more) intersections
+        if ( intersects.length > 0 )
+        {
+            console.log("Hit @ " + toString( intersects[0].point ) );
+            // change the color of the closest face.
+            intersects[ 0 ].face.color.setRGB( 0.8 * Math.random() + 0.2, 0, 0 ); 
+            intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
+        }
 
     }
 
