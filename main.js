@@ -31,10 +31,24 @@ $(window).load(function(){
     landuseProjectionCanvas.width = landuse_img.width;
     landuseProjectionCanvas.height = landuse_img.height;
     landuseProjectionContext.drawImage(landuse_img, 0, 0, landuse_img.width, landuse_img.height);
+
+    var elevation_img = document.getElementById("elevation");
+    var elevationProjectionCanvas = document.createElement('canvas');
+    var elevationProjectionContext = elevationProjectionCanvas.getContext('2d');
+
+    elevationProjectionCanvas.width = elevation_img.width;
+    elevationProjectionCanvas.height = elevation_img.height;
+    elevationProjectionContext.drawImage(elevation_img, 0, 0, elevation_img.width, elevation_img.height);
     
 
     var pixelData = null;
     var landuseData = null;
+    var elevationData = null;
+
+    var greatest_elevation = -1;
+    greatest_elevation = 217;
+    var smallest_elevation = 256;
+    var smallest_elevation = 8;
 
     var maxLat = -100;
     var maxLon = 0;
@@ -75,6 +89,11 @@ $(window).load(function(){
         //console.log(g);
         //console.log(b);
         //console.log(a);
+        return [r, g, b];
+
+    }
+
+    var getShading = function(colors) {
         function componentToHex(c) {
           var hex = c.toString(16);
           return hex.length == 1 ? "0" + hex : hex;
@@ -83,11 +102,90 @@ $(window).load(function(){
         function rgbToHex(r, g, b) {
           return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
         }
-        var mat = new THREE.MeshBasicMaterial({color: rgbToHex(r,g,b), transparent: true});
+        var mat = new THREE.MeshBasicMaterial({color: rgbToHex(colors[0],colors[1],colors[2]), transparent: true});
         //mat.color.setRGB(r, g, b);
         //mesh.geometry.colorsNeedUpdate = true;
         return mat;
+    }
 
+    var getElevation = function(lat, lon) {
+        var x = parseInt(elevation_img.width * (lon + 180) / 360);
+        var y = parseInt(elevation_img.height * (lat + 90) / 180);
+
+        if(elevationData == null){
+            elevationData = elevationProjectionContext.getImageData(0,0,elevation_img.width, elevation_img.height);
+        }
+        //console.log(landuseData);
+        var r = elevationData.data[(y * elevationData.width + x) * 4];
+        var g = elevationData.data[(y * elevationData.width + x) * 4 + 1];
+        var b = elevationData.data[(y * elevationData.width + x) * 4 + 2];
+        //var a = elevationData.data[(y * elevationData.width + x) * 4 + 3];
+
+        /*if (r > greatest_elevation) {
+            greatest_elevation = r;
+        }
+        if (r < smallest_elevation) {
+            smallest_elevation = r;
+        }*/
+        //console.log(r);
+        //console.log(g);
+        //console.log(b);
+        // console.log(a);
+        return r;
+
+    }
+
+    var getTerrainType = function(lat, lon, elevation_threshold) {
+        var elevation = getElevation(lat, lon);
+        var land_cover = getLandCover(lat, lon);
+        var r = land_cover[0];
+        var g = land_cover[1];
+        var b = land_cover[2];
+
+        var diff = Math.max(Math.abs(r - g), Math.abs(r - b), Math.abs(g - b));
+
+
+        var type = "UNKNOWN";
+
+        if (elevation > elevation_threshold * greatest_elevation) {
+            type = "ORE";
+        } else if (r < 50 && g < 30 && b > 80) {
+            type = "WATER";
+        } else if (diff < 40) {
+            type = "DESERT"
+        } else if (g - r > 35 && g - b > 15) {
+            type = "FOREST";
+        } else if (r - b > 75 && g - b > 75) {
+            type = "WHEAT";
+        } else if (r - b > 40 && g - b > 40) {
+            type = "SHEEP";
+        } else if (r > g - 50 && r > b - 50) {
+            type = "BRICK";
+        }
+        if (type.localeCompare("UNKNOWN") == 0) {
+            console.log(r.toString() + " " + g.toString() + " " + b.toString());
+        }
+        return type;
+    }
+
+    var getTerrainColor = function(type) {
+        var tile_color = 0xa52a2a;
+        if (type.localeCompare("ORE") == 0) {
+            tile_color = 0x696969;
+        } else if (type.localeCompare("WATER") == 0) {
+            tile_color = 0x0000cd;
+        } else if (type.localeCompare("DESERT") == 0) {
+            tile_color = 0xeee8aa;
+        } else if (type.localeCompare("FOREST") == 0) {
+            tile_color = 0x008000;
+        } else if (type.localeCompare("WHEAT") == 0) {
+            tile_color = 0xffff00;
+        } else if (type.localeCompare("SHEEP") == 0) {
+            tile_color = 0x7fff00;
+        } else if (type.localeCompare("BRICK") == 0) {
+            tile_color = 0x8b4513;
+        }
+        return new THREE.MeshBasicMaterial({color: tile_color, transparent: true});
     }
 
 
@@ -139,7 +237,10 @@ $(window).load(function(){
             } else {
                 material = oceanMaterial[Math.floor(Math.random() * oceanMaterial.length)]
             }*/
-            material = getLandCover(latLon.lat, latLon.lon);
+            //getElevation(latLon.lat, latLon.lon);
+            //material = getShading(getLandCover(latLon.lat, latLon.lon));
+            t.terrain_type = getTerrainType(latLon.lat, latLon.lon, 0.45);
+            material = getTerrainColor(t.terrain_type);
 
             material.opacity = 0.3;
             var mesh = new THREE.Mesh(geometry, material.clone());
@@ -148,6 +249,8 @@ $(window).load(function(){
             hexasphere.tiles[i].mesh = mesh;
 
         }
+        console.log(greatest_elevation);
+        console.log(smallest_elevation);
 
         seenTiles = {};
         
