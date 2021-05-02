@@ -41,6 +41,12 @@ $(window).load(function(){
     var minLat = 0;
     var minLon = 0;
 
+    var controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+    var projector, mouse = { x: 0, y: 0 };
+    projector = new THREE.Projector();
+    document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+
     var isLand = function(lat, lon){
 
         var x = parseInt(img.width * (lon + 180) / 360);
@@ -170,10 +176,10 @@ $(window).load(function(){
 
         lastTime = Date.now();
 
-        camera.position.x = cameraDistance * Math.cos(cameraAngle);
+        /*camera.position.x = cameraDistance * Math.cos(cameraAngle);
         camera.position.y = Math.sin(cameraAngle)* 10;
         camera.position.z = cameraDistance * Math.sin(cameraAngle);
-        camera.lookAt( scene.position );
+        camera.lookAt( scene.position );*/
 
         renderer.render( scene, camera );
 
@@ -190,7 +196,7 @@ $(window).load(function(){
         });
 
         currentTiles = nextTiles;
-        //controls.update();
+        controls.update();
         requestAnimationFrame(tick);
 
     }
@@ -244,5 +250,27 @@ $(window).load(function(){
     requestAnimationFrame(tick);
     window.scene = scene;
     window.createScene = createScene;
+
+    function onDocumentMouseDown( event ) 
+    {
+        // the following line would stop any other event handler from firing
+        // (such as the mouse's TrackballControls)
+        // event.preventDefault();
+        
+        console.log("Click.");
+        
+        // update the mouse variable
+        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        
+        // find intersections
+
+        // create a Ray with origin at the mouse position
+        //   and direction into the scene (camera direction)
+        var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
+        projector.unprojectVector( vector, camera );
+        var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+    }
 
 });
