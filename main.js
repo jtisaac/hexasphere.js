@@ -306,7 +306,7 @@ $(window).load(function(){
         currentTiles = hexasphere.tiles.slice().splice(0,12);
         currentTiles.forEach(function(item){
             seenTiles[item.toString()] = 1;
-            item.mesh.material.opacity = 0.2;
+            item.mesh.material.opacity = 0.0;
         });
         //targetList.push(hexasphere);
         //console.log(hexasphere);
@@ -341,7 +341,7 @@ $(window).load(function(){
         currentTiles.forEach(function(item){
             item.neighbors.forEach(function(neighbor){
                 if(!seenTiles[neighbor.toString()]){
-                    neighbor.mesh.material.opacity = 0.2;
+                    neighbor.mesh.material.opacity = 0.0;
                     nextTiles.push(neighbor);
                     seenTiles[neighbor] = 1;
                 }
