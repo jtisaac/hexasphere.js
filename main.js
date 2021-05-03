@@ -80,7 +80,7 @@ $(window).load(function(){
         if(pixelData == null){
             pixelData = projectionContext.getImageData(0,0,img.width, img.height);
         }
-        console.log(pixelData);
+        //console.log(pixelData);
         return pixelData.data[(y * pixelData.width + x) * 4] === 0;
     };
 
@@ -166,10 +166,10 @@ $(window).load(function(){
         if (r < smallest_elevation) {
             smallest_elevation = r;
         }*/
-        console.log(r);
-        console.log(g);
-        console.log(b);
-        console.log("Next");
+        //console.log(r);
+        //console.log(g);
+        //console.log(b);
+        //console.log("Next");
         return r >= 245 && g >= 30 && g <= 45 && b <= 25;
 
     }
@@ -205,7 +205,7 @@ $(window).load(function(){
             type = "WATER";
         }
         if (river && great_rivers) {
-            console.log("river");
+            //console.log("river");
             type = "WATER";
         }
         // Identify Black Sea to change from desert to sea
