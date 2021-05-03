@@ -147,9 +147,9 @@ $(window).load(function(){
     }
 
     var getRiver = function(lat, lon) {
-        var x = parseInt(river_img.width * (lon + 180 - 10) / 360);
+        var x = parseInt(river_img.width * (lon + 180) / 360);
 
-        var y = parseInt(river_img.height * ((lat + 90) / 160));
+        var y = parseInt(river_img.height * ((lat + 90) / 180));
 
         if(riverData == null){
             riverData = riverProjectionContext.getImageData(0,0,river_img.width, river_img.height);
@@ -170,11 +170,11 @@ $(window).load(function(){
         console.log(g);
         console.log(b);
         console.log("Next");
-        return r != undefined && r != 255 || g != 255;
+        return r >= 245 && g >= 30 && g <= 45 && b <= 25;
 
     }
 
-    var getTerrainType = function(lat, lon, elevation_threshold) {
+    var getTerrainType = function(lat, lon, elevation_threshold, great_rivers) {
         var elevation = getElevation(lat, lon);
         var land_cover = getLandCover(lat, lon);
         var river = getRiver(lat, lon);
@@ -201,10 +201,12 @@ $(window).load(function(){
             type = "SHEEP";
         } else if (r > g - 50 && r > b - 50) {
             type = "BRICK";
+        } else {
+            type = "WATER";
         }
-        if (river) {
+        if (river && great_rivers) {
             console.log("river");
-            type = "UNKNOWN";
+            type = "WATER";
         }
         // Identify Black Sea to change from desert to sea
         /*if (lat+90 > 40 && lon > 27 && lat+90 < 47 && lon < 42) {
@@ -285,7 +287,7 @@ $(window).load(function(){
             }*/
             //getElevation(latLon.lat, latLon.lon);
             //material = getShading(getLandCover(latLon.lat, latLon.lon));
-            t.terrain_type = getTerrainType(latLon.lat, latLon.lon, 0.45);
+            t.terrain_type = getTerrainType(latLon.lat, latLon.lon, 0.45, true);
             material = getTerrainColor(t.terrain_type);
 
             material.opacity = 0.3;
