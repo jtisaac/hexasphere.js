@@ -290,7 +290,7 @@ $(window).load(function(){
             t.terrain_type = getTerrainType(latLon.lat, latLon.lon, 0.45, true);
             material = getTerrainColor(t.terrain_type);
 
-            material.opacity = 0.3;
+            material.opacity = 0.1;
             var mesh = new THREE.Mesh(geometry, material.clone());
             //mesh.geometry.colorsNeedUpdate = true;
             scene.add(mesh);
@@ -306,7 +306,7 @@ $(window).load(function(){
         currentTiles = hexasphere.tiles.slice().splice(0,12);
         currentTiles.forEach(function(item){
             seenTiles[item.toString()] = 1;
-            item.mesh.material.opacity = 1;
+            item.mesh.material.opacity = 0.2;
         });
         //targetList.push(hexasphere);
         //console.log(hexasphere);
@@ -341,7 +341,7 @@ $(window).load(function(){
         currentTiles.forEach(function(item){
             item.neighbors.forEach(function(neighbor){
                 if(!seenTiles[neighbor.toString()]){
-                    neighbor.mesh.material.opacity = 1;
+                    neighbor.mesh.material.opacity = 0.2;
                     nextTiles.push(neighbor);
                     seenTiles[neighbor] = 1;
                 }
@@ -434,9 +434,9 @@ $(window).load(function(){
             console.log("Hit @ ");
             console.log(intersects[0]);
             // change the color of the closest face.
-            //intersects[ 0 ].face.color.setHex(Math.random() * 0xffffff); 
-            intersects[ 0 ].object.material.color.setHex(0xff0000);
-            intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
+            //intersects[ 0 ].object.material.color.setHex(0xff0000);
+            //intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
+            intersects[ 0 ].object.material.opacity = 0.7;
         }
 
     }
