@@ -271,7 +271,7 @@ $(window).load(function(){
 
             for(var j = 0; j< t.boundary.length; j++){
                 var bp = t.boundary[j];
-                geometry.vertices.push(new THREE.Vector3(bp.x, bp.y, bp.z));
+                geometry.vertices.push(new THREE.Vector3(parseFloat(bp.x), parseFloat(bp.y), parseFloat(bp.z)));
             }
             geometry.faces.push(new THREE.Face3(0,1,2));
             geometry.faces.push(new THREE.Face3(0,2,3));
@@ -294,7 +294,7 @@ $(window).load(function(){
             var mesh = new THREE.Mesh(geometry, material.clone());
             //mesh.geometry.colorsNeedUpdate = true;
             scene.add(mesh);
-            //targetList.push(mesh);
+            targetList.push(mesh);
             hexasphere.tiles[i].mesh = mesh;
 
         }
@@ -308,7 +308,8 @@ $(window).load(function(){
             seenTiles[item.toString()] = 1;
             item.mesh.material.opacity = 1;
         });
-        targetList.push(hexasphere);
+        //targetList.push(hexasphere);
+        //console.log(hexasphere);
         window.hexasphere = hexasphere;
         introTick = 0;
     };
@@ -424,14 +425,17 @@ $(window).load(function(){
         var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
 
         // create an array containing all objects in the scene with which the ray intersects
-        var intersects = ray.intersectObjects( targetList );
+        // console.log(targetList);
+        var intersects = ray.intersectObjects( scene.children );
         
         // if there is one (or more) intersections
         if ( intersects.length > 0 )
         {
-            console.log("Hit @ " + toString( intersects[0].point ) );
+            console.log("Hit @ ");
+            console.log(intersects[0]);
             // change the color of the closest face.
-            intersects[ 0 ].face.color.setRGB( 0.8 * Math.random() + 0.2, 0, 0 ); 
+            //intersects[ 0 ].face.color.setHex(Math.random() * 0xffffff); 
+            intersects[ 0 ].object.material.color.setHex(0xff0000);
             intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
         }
 
