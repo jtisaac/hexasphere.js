@@ -429,6 +429,8 @@ var Tile = function(centerPoint, hexSize){
     this.boundary = [];
     this.neighborIds = []; // this holds the centerpoints, will resolve to references after
     this.neighbors = []; // this is filled in after all the tiles have been created
+    this.terrain_type = undefined;
+    this.terrain_subtype = undefined;
 
     var neighborHash = {};
     for(var f=0; f< this.faces.length; f++){

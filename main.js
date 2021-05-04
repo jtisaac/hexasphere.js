@@ -216,12 +216,26 @@ $(window).load(function(){
         return type;
     }
 
-    var getTerrainColor = function(type) {
+    var getIsCoast = function(tile) {
+        for (var i = 0; i < tile.neighbors.length; i++) {
+            if (tile.neighbors[i].terrain_type.localeCompare("WATER") != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    var getTerrainColor = function(type, subtype) {
         var tile_color = 0xa52a2a;
         if (type.localeCompare("ORE") == 0) {
             tile_color = 0x696969;
         } else if (type.localeCompare("WATER") == 0) {
-            tile_color = 0x0000cd;
+            if (subtype.localeCompare("COAST") == 0) {
+                // tile_color = 0x63d1f4;
+                tile_color = 0x50a6c2;
+            } else {
+                tile_color = 0x0000cd;
+            }
         } else if (type.localeCompare("DESERT") == 0) {
             tile_color = 0xeee8aa;
         } else if (type.localeCompare("FOREST") == 0) {
@@ -262,6 +276,12 @@ $(window).load(function(){
             scene.remove(scene.children[0]); 
         }
         var hexasphere = new Hexasphere(radius, divisions, tileSize);
+        console.log(hexasphere);
+        for(var i = 0; i< hexasphere.tiles.length; i++){
+            var t = hexasphere.tiles[i];
+            var latLon = t.getLatLon(hexasphere.radius);
+            t.terrain_type = getTerrainType(latLon.lat, latLon.lon, 0.45, true);
+        }
         for(var i = 0; i< hexasphere.tiles.length; i++){
             var t = hexasphere.tiles[i];
             var latLon = t.getLatLon(hexasphere.radius);
@@ -287,17 +307,23 @@ $(window).load(function(){
             }*/
             //getElevation(latLon.lat, latLon.lon);
             //material = getShading(getLandCover(latLon.lat, latLon.lon));
-            t.terrain_type = getTerrainType(latLon.lat, latLon.lon, 0.45, true);
-            material = getTerrainColor(t.terrain_type);
+            if (t.terrain_type.localeCompare("WATER") == 0 && getIsCoast(t)) {
+                t.terrain_subtype = "COAST";
+            } else {
+                t.terrain_subtype = "OCEAN";
+            }
+            material = getTerrainColor(t.terrain_type, t.terrain_subtype);
 
             material.opacity = 0.1;
             var mesh = new THREE.Mesh(geometry, material.clone());
             //mesh.geometry.colorsNeedUpdate = true;
+            mesh.userData.tile = t.toString();
             scene.add(mesh);
             targetList.push(mesh);
             hexasphere.tiles[i].mesh = mesh;
 
         }
+
         //console.log(greatest_elevation);
         //console.log(smallest_elevation);
 
@@ -306,7 +332,7 @@ $(window).load(function(){
         currentTiles = hexasphere.tiles.slice().splice(0,12);
         currentTiles.forEach(function(item){
             seenTiles[item.toString()] = 1;
-            item.mesh.material.opacity = 0.0;
+            item.mesh.material.opacity = 0.8;
         });
         //targetList.push(hexasphere);
         //console.log(hexasphere);
@@ -341,7 +367,7 @@ $(window).load(function(){
         currentTiles.forEach(function(item){
             item.neighbors.forEach(function(neighbor){
                 if(!seenTiles[neighbor.toString()]){
-                    neighbor.mesh.material.opacity = 0.0;
+                    neighbor.mesh.material.opacity = 0.8;
                     nextTiles.push(neighbor);
                     seenTiles[neighbor] = 1;
                 }
@@ -436,7 +462,7 @@ $(window).load(function(){
             // change the color of the closest face.
             //intersects[ 0 ].object.material.color.setHex(0xff0000);
             //intersects[ 0 ].object.geometry.colorsNeedUpdate = true;
-            intersects[ 0 ].object.material.opacity = 0.7;
+            intersects[ 0 ].object.material.opacity = 1;
         }
 
     }
